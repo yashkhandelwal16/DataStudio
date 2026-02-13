@@ -1,7 +1,5 @@
 Flask
 pandas
-matplotlib
-seaborn
 openpyxl
 supabase
 python-dotenv

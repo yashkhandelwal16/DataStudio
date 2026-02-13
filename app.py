@@ -1,0 +1,268 @@
+import os
+from functools import wraps
+from pathlib import Path
+
+from flask import (
+    Flask,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_compress import Compress
+from werkzeug.utils import secure_filename
+from supabase import create_client, Client
+from dotenv import load_dotenv
+
+from utils.data_loader import load_dataset
+from utils.analysis import basic_statistics, column_overview, generate_text_insights
+from utils.visualization import create_charts
+
+# Load environment variables
+load_dotenv(override=True)
+
+BASE_DIR = Path(__file__).resolve().parent
+UPLOAD_FOLDER = BASE_DIR / "uploads"
+CHART_FOLDER = BASE_DIR / "static" / "charts"
+
+ALLOWED_EXTENSIONS = {".csv", ".xlsx", ".xls", ".json"}
+
+# Supabase Setup
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+if SUPABASE_KEY:
+    masked_key = SUPABASE_KEY[:10] + "..." if len(SUPABASE_KEY) > 10 else "SHORT_KEY"
+    print(f"DEBUG: Supabase Key loaded. Starts with: {masked_key}")
+
+supabase: Client = None
+if SUPABASE_URL and SUPABASE_KEY and "YOUR_SUPABASE" not in SUPABASE_URL:
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+app = Flask(__name__)
+Compress(app) # Enable Gzip compression
+app.config["UPLOAD_FOLDER"] = str(UPLOAD_FOLDER)
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "change-this-secret-key")
+
+# --- AUTH DECORATOR ---
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user" not in session or "access_token" not in session:
+            # Clear potential stale session data if token is missing
+            session.clear()
+            flash("Please log in to access this page.", "warning")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def allowed_file(filename: str) -> bool:
+    _, ext = os.path.splitext(filename)
+    return ext.lower() in ALLOWED_EXTENSIONS
+
+# --- ROUTES ---
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        
+        if not supabase:
+            flash("Supabase is not configured. Please check your .env file.", "danger")
+            return redirect(url_for("login"))
+            
+        try:
+            response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            session["user"] = response.user.id
+            session["email"] = email
+            # Store tokens to restore session after restart
+            session["access_token"] = response.session.access_token
+            session["refresh_token"] = response.session.refresh_token
+            
+            flash("Successfully logged in!", "success")
+            return redirect(url_for("index"))
+        except Exception as e:
+            flash(f"Login failed: {str(e)}", "danger")
+            
+    return render_template("login.html")
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        full_name = request.form.get("full_name")
+        
+        if not supabase:
+            flash("Supabase is not configured. Please check your .env file.", "danger")
+            return redirect(url_for("signup"))
+            
+        try:
+            # Sign up the user
+            response = supabase.auth.sign_up({
+                "email": email,
+                "password": password,
+                "options": {
+                    "data": {"full_name": full_name}
+                }
+            })
+            flash("Signup successful! Please check your email for verification.", "success")
+            return redirect(url_for("login"))
+        except Exception as e:
+            flash(f"Signup failed: {str(e)}", "danger")
+            
+    return render_template("signup.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("You have been logged out.", "info")
+    return redirect(url_for("login"))
+
+@app.route("/test-supabase")
+def test_supabase():
+    if not supabase:
+        return "Supabase client not initialized. Check your .env file."
+    try:
+        print("DEBUG: Testing Supabase storage connection...")
+        buckets = supabase.storage.list_buckets()
+        bucket_names = [b.name for b in buckets]
+        print(f"DEBUG: Found buckets: {bucket_names}")
+        return {
+            "status": "success",
+            "buckets": bucket_names,
+            "message": f"Found {len(bucket_names)} buckets.",
+            "url_used": SUPABASE_URL[:20] + "..."
+        }
+    except Exception as e:
+        import traceback
+        err_msg = str(e)
+        trace = traceback.format_exc()
+        print(f"--- SUPABASE TEST ERROR ---")
+        print(trace)
+        print(f"-----------------------------")
+        return {
+            "status": "error",
+            "message": err_msg,
+            "error_type": type(e).__name__,
+            "tip": "Check if your SUPABASE_KEY is a full JWT (starts with eyJ) and not a short publishable key."
+        }
+
+@app.route("/", methods=["GET", "POST"])
+@login_required
+def index():
+    if request.method == "POST":
+        file = request.files.get("data_file")
+        if file is None or file.filename == "":
+            flash("Please select a file to upload.", "warning")
+            return redirect(url_for("index"))
+
+        if not allowed_file(file.filename):
+            flash("Unsupported file type. Please upload CSV, Excel, or JSON.", "danger")
+            return redirect(url_for("index"))
+
+        try:
+            # Read file bytes
+            file_bytes = file.read()
+            filename = secure_filename(file.filename)
+            
+            # Get tokens from session to authenticate the background worker
+            access_token = session.get("access_token")
+            refresh_token = session.get("refresh_token")
+
+            # --- SUPABASE STORAGE UPLOAD (Background) ---
+            if supabase:
+                import threading
+                def upload_to_supabase(content, path, acc_token, ref_token):
+                    import time
+                    max_retries = 3
+                    base_delay = 1  # seconds
+                    bucket_name = "upload files"
+                    
+                    # Create a dedicated client for this thread to avoid global state issues
+                    # and ensure we are authenticated as the specific user.
+                    try:
+                        thread_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+                        if acc_token:
+                            thread_client.auth.set_session(acc_token, ref_token)
+                    except Exception as client_err:
+                        print(f"DEBUG: Failed to initialize threaded Supabase client: {client_err}")
+                        return
+
+                    # Supabase doesn't like backslashes in paths
+                    clean_path = path.replace("\\", "/").strip()
+
+                    for attempt in range(1, max_retries + 1):
+                        try:
+                            # Normalize the path and bucket name
+                            
+                            print(f"DEBUG: Starting upload (Attempt {attempt}/{max_retries})...")
+                            print(f" - Bucket: '{bucket_name}'")
+                            print(f" - Path:   '{clean_path}'")
+                            print(f" - Size:   {len(content)} bytes")
+                            
+                            res = thread_client.storage.from_(bucket_name).upload(
+                                path=clean_path,
+                                file=content,
+                                file_options={"upsert": "true", "content-type": "application/octet-stream"}
+                            )
+                            print(f"DEBUG: ✅ Upload SUCCESS! Response: {res}")
+                            return  # Success, exit function
+                            
+                        except Exception as storage_err:
+                            print(f"\n❌ SUPABASE UPLOAD FAILED (Attempt {attempt}/{max_retries}) ❌")
+                            print(f"Bucket: {bucket_name}")
+                            print(f"File:   {path}")
+                            print(f"Error:  {type(storage_err).__name__}: {storage_err}")
+                            if attempt < max_retries:
+                                delay = base_delay * (2 ** (attempt - 1))
+                                print(f"Retrying in {delay} seconds...")
+                                time.sleep(delay)
+                            else:
+                                print(f"Max retries reached. Upload failed permanently.")
+                                print(f"-------------------------------\n")
+
+                # Remove daemon=True so the thread completes even if the request finishes quickly
+                # pass tokens explicitly
+                threading.Thread(target=upload_to_supabase, args=(file_bytes, filename, access_token, refresh_token)).start()
+
+            # Process the data directly from bytes (No local file saving)
+            df = load_dataset(file_content=file_bytes, filename=filename)
+            preview_table = df.head(20).to_html(
+                classes="table table-hover table-sm",
+                border=0,
+                index=False,
+            )
+
+            summary_table = basic_statistics(df)
+            column_info_table = column_overview(df)
+            text_insights = generate_text_insights(df)
+            charts = create_charts(df) # Returns JSON strings now
+
+            row_count = len(df)
+            column_count = df.shape[1]
+
+            return render_template(
+                "dashboard.html",
+                preview_table=preview_table,
+                summary_table=summary_table,
+                column_info_table=column_info_table,
+                text_insights=text_insights,
+                charts=charts,
+                row_count=row_count,
+                column_count=column_count,
+                filename=filename,
+            )
+        except Exception as exc:
+            flash(f"Error processing file: {exc}", "danger")
+            return redirect(url_for("index"))
+
+    return render_template("index.html")
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
+

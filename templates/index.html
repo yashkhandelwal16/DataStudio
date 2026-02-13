@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Studio - Modern Analytics</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    // Initialize theme immediately to prevent flash
+    (function () {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+</head>
+
+<body>
+  <div class="marquee">
+    <div class="marquee-content">
+      ✦ HIGH CONTRAST DIGITAL EXPERIENCES ✦ ANALYTICS ✦ DATA VISUALIZATION ✦ PURE LOGIC ✦ ANALYSE YOUR REPORT ✦ 3D
+      VISUALIZATION ✦ AI Insights ✦
+      ✦ HIGH CONTRAST DIGITAL EXPERIENCES ✦ ANALYTICS ✦ DATA VISUALIZATION ✦ PURE LOGIC ✦ ANALYSE YOUR REPORT ✦ 3D
+      VISUALIZATION ✦ AI Insights ✦
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="navbar-brand" href="/">
+        DATA STUDIO.
+      </a>
+      <div class="d-flex align-items-center gap-3">
+        <button id="theme-toggle" class="btn-neo-outline py-2 px-3" style="font-size: 1.2rem; line-height: 1;"
+          aria-label="Toggle Dark Mode">
+          🌙
+        </button>
+        <span class="small fw-bolder text-uppercase d-none d-md-block" style="color: var(--text-main);">
+          LOGGED AS: <span
+            style="background-color: var(--text-main); color: var(--bg-card); padding: 0.2rem 0.6rem; font-weight: 900;">{{
+            session.get('email', 'Guest') }}</span>
+        </span>
+        <a href="/logout" class="btn-neo-outline py-2 px-4">Log out</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="container mt-5 pt-5">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <div class="auth-header-tag mb-4">
+          CREATIVE ENGINEER
+        </div>
+        <h1 class="hero-heading">
+          DATA<br>
+          <span class="highlight">STUDIO.</span>
+        </h1>
+        <div class="neo-box mb-5" style="max-width: 500px;">
+          <p class="mb-0 fw-bold text-uppercase">
+            Crafting high-contrast data experiences that <span
+              style="text-decoration: underline; text-decoration-thickness: 4px;">break the mold</span>.
+            Engineered with Precision.
+          </p>
+        </div>
+        <div class="d-flex gap-3 mb-5">
+          <button class="btn-neo"
+            onclick="document.getElementById('upload-section').scrollIntoView({behavior: 'smooth'})">LET'S START
+            ↘</button>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div id="upload-section" class="auth-card">
+          <div class="auth-header-tag">Analysis Engine v2.0</div>
+          <h2 class="fw-black text-uppercase mb-4">Run Analytics</h2>
+
+          {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          {% for category, message in messages %}
+          <div class="neo-box p-3 mb-4"
+            style="background-color: var(--primary-yellow) !important; box-shadow: 4px 4px 0px var(--shadow-color); border: 2px solid black; font-weight: 900; color: black;">
+            {{ message }}</div>
+          {% endfor %}
+          {% endif %}
+          {% endwith %}
+
+          <form id="upload-form" method="post" enctype="multipart/form-data">
+            <div class="mb-4">
+              <div id="drop-zone" class="drop-zone">
+                <span class="drop-zone-icon">📁</span>
+                <span class="drop-zone-text">Drag & Drop your dataset here</span>
+                <p class="small fw-black text-uppercase mb-3">- OR -</p>
+                <button type="button" class="btn-neo-outline btn-sm"
+                  onclick="document.getElementById('data_file').click()">Choose File</button>
+                <input type="file" id="data_file" name="data_file" class="form-control-hidden"
+                  accept=".csv,.xlsx,.xls,.json" required>
+                <div id="file-info" class="file-info-display"></div>
+              </div>
+              <div class="small fw-black mt-2 text-uppercase text-center">Format: CSV · EXCEL · JSON</div>
+            </div>
+            <button type="submit" class="btn-neo w-100">Process Data ↗</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="container mt-5 pt-5 mb-5">
+    <h2 class="mb-5 border-bottom border-dark border-4 pb-2 d-inline-block fw-black text-uppercase">Capabilities</h2>
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="stat-card yellow">
+          <span class="stat-label">Descriptive</span>
+          <span class="stat-value">STATS</span>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <span class="stat-label">Visual</span>
+          <span class="stat-value">CHARTS</span>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <span class="stat-label">High</span>
+          <span class="stat-value">SPEED</span>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card black">
+          <span class="stat-label">Secure</span>
+          <span class="stat-value">AUTH</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-text">
+        Made with <span class="footer-heart">❤️</span> by Yash Khandelwal | © 2024–2026
+      </div>
+    </div>
+  </footer>
+
+
+  <div id="loading-overlay">
+    <div class="loader-box">
+      <div class="loader-spinner"></div>
+      <div class="loader-text">Processing Massive Dataset...</div>
+      <div class="small fw-bold mt-2 text-uppercase">Generating 3D Models & Statistics</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('data_file');
+    const fileInfo = document.getElementById('file-info');
+    const uploadForm = document.getElementById('upload-form');
+    const loader = document.querySelector('.loader-box'); // Select loader container
+    const loadingOverlay = document.getElementById('loading-overlay');
+
+
+    // 1. Prevent Default Browser Behavior (Stops the "Reload" issue)
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    // 2. Highlight / Unhighlight Logic with Counter (Fixes flickering "Smoothness")
+    let dragCounter = 0;
+
+    dropZone.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      dragCounter++;
+      dropZone.classList.add('active');
+    }, false);
+
+    dropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter <= 0) { // Safety check
+        dragCounter = 0;
+        dropZone.classList.remove('active');
+      }
+    }, false);
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      // Ensure active class if missed
+      if (!dropZone.classList.contains('active')) {
+        dropZone.classList.add('active');
+      }
+    }, false);
+
+    // 3. Handle Dropped Files
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+      dragCounter = 0; // Reset
+      dropZone.classList.remove('active');
+
+      const dt = e.dataTransfer;
+      const files = dt.files;
+
+      if (files.length) {
+        fileInput.files = files;
+        updateFileInfo(files[0]);
+      }
+    }
+
+
+    // Handle manual file selection
+    fileInput.addEventListener('change', function () {
+      if (this.files.length) {
+        updateFileInfo(this.files[0]);
+      }
+    });
+
+    function updateFileInfo(file) {
+      document.querySelector('.drop-zone-text').textContent = "File Selected:";
+      document.querySelector('#file-info').textContent = file.name;
+      document.querySelector('#file-info').style.display = 'block';
+      document.querySelector('.drop-zone-icon').textContent = '📄';
+    }
+
+    // Loading Overlay Logic
+    uploadForm.addEventListener('submit', function (e) {
+      if (!fileInput.files.length) {
+        e.preventDefault();
+        alert("Please select a file first.");
+        return;
+      }
+      loadingOverlay.style.display = 'flex';
+    });
+
+    // Make the entire drop zone clickable, but prevent recursion
+    dropZone.addEventListener('click', (e) => {
+      // STOP recursive loops:
+      // 1. Don't trigger if clicking the button (it handles itself)
+      // 2. Don't trigger if clicking the file input itself (prevents infinite loop)
+      if (e.target.tagName === 'BUTTON' || e.target === fileInput) return;
+
+      fileInput.click();
+    });
+  </script>
+</body>
+
+</html>

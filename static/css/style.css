@@ -1,0 +1,743 @@
+/* ===============================
+   Design system: Neo-Brutalist
+   Inspired by: Alex Moraes / Brutalist Design
+   =============================== */
+
+:root {
+  --primary-yellow: #FFD600;
+  --secondary-yellow: #FFF176;
+
+  /* Semantic Colors - Light Mode Default */
+  --bg-main: #F3F3F3;
+  --bg-card: #FFFFFF;
+  --text-main: #000000;
+  --text-muted: #333333;
+  --border-color: #000000;
+  --shadow-color: #000000;
+
+  --border-thick: 3px solid var(--border-color);
+  --border-thin: 2px solid var(--border-color);
+  --shadow-hard: 6px 6px 0px var(--shadow-color);
+  --shadow-hard-sm: 4px 4px 0px var(--shadow-color);
+  --transition-fast: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+[data-theme="dark"] {
+  --bg-main: #121212;
+  --bg-card: #2C2C2C;
+  --text-main: #F3F3F3;
+  --text-muted: #CCCCCC;
+  --border-color: #F3F3F3;
+  /* White/Light Grey borders for contrast */
+  --shadow-color: #F3F3F3;
+  /* White shadows */
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll */
+  width: 100%;
+  position: relative;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+* {
+  box-sizing: border-box;
+  /* Crucial for preventing width calculations errors */
+}
+
+/* --- BRUTALIST COMPONENTS --- */
+
+.neo-box {
+  background: var(--bg-card);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard);
+  padding: 2rem;
+  transition: var(--transition-fast);
+  max-width: 100%;
+  /* Ensure boxes don't exceed screen */
+  word-wrap: break-word;
+  /* Prevent text overflow */
+}
+
+.neo-box:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px var(--shadow-color);
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: var(--border-thick);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-hard-sm);
+  transition: var(--transition-fast);
+  height: 100%;
+}
+
+.stat-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--shadow-color);
+}
+
+.stat-card.yellow {
+  background: var(--primary-yellow);
+  color: black;
+  /* Always black text on yellow */
+}
+
+.stat-card.black {
+  background: black;
+  color: white;
+}
+
+.stat-label {
+  text-transform: uppercase;
+  font-weight: 800;
+  font-size: 0.8rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Navbar */
+.navbar {
+  background: var(--bg-card);
+  border-bottom: var(--border-thick);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-brand {
+  font-weight: 900;
+  font-size: 1.8rem;
+  color: var(--text-main) !important;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+}
+
+/* Buttons */
+.btn-neo {
+  background: var(--primary-yellow);
+  color: black;
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard-sm);
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 0.8rem 2rem;
+  display: inline-block;
+  text-decoration: none;
+  transition: var(--transition-fast);
+  cursor: pointer;
+}
+
+.btn-neo:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--shadow-color);
+  background: var(--primary-yellow);
+  color: black;
+}
+
+.btn-neo:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px var(--shadow-color);
+}
+
+.btn-neo-outline {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard-sm);
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 0.8rem 2rem;
+  display: inline-block;
+  text-decoration: none;
+  transition: var(--transition-fast);
+  cursor: pointer;
+}
+
+.btn-neo-outline:hover {
+  background: var(--primary-yellow);
+  box-shadow: 6px 6px 0px var(--shadow-color);
+  transform: translate(-2px, -2px);
+  color: black;
+  /* Force black text on hover */
+}
+
+/* Forms */
+.form-control {
+  border: var(--border-thick) !important;
+  border-radius: 0 !important;
+  padding: 0.8rem !important;
+  font-weight: 700;
+}
+
+.form-control:focus {
+  box-shadow: var(--shadow-hard-sm) !important;
+  border-color: black !important;
+}
+
+/* Responsive Box Handling */
+@media (max-width: 767px) {
+  .neo-box.d-inline-block {
+    display: block !important;
+    width: 100%;
+  }
+}
+
+/* Hero Section */
+.hero-heading {
+  font-size: 5rem;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -2px;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.highlight {
+  background: var(--primary-yellow);
+  padding: 0 10px;
+  display: inline-block;
+}
+
+/* Marquee */
+.marquee {
+  background: #000000;
+  color: white;
+  padding: 0.5rem 0;
+  border-bottom: var(--border-thick);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-content {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marquee 30s linear infinite;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  100% {
+    transform: translate(-100%, 0);
+  }
+}
+
+/* Footer */
+footer {
+  margin-top: 5rem;
+  padding: 4rem 2rem;
+  border-top: var(--border-thick);
+  background: var(--bg-card);
+  text-align: center;
+}
+
+.footer-text {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+}
+
+.footer-heart {
+  display: inline-block;
+  transition: transform 0.2s ease-in-out;
+  cursor: default;
+}
+
+.footer-heart:hover {
+  animation: heartbeat 0.8s infinite;
+}
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+
+  14% {
+    transform: scale(1.3);
+  }
+
+  28% {
+    transform: scale(1);
+  }
+
+  42% {
+    transform: scale(1.3);
+  }
+
+  70% {
+    transform: scale(1);
+  }
+}
+
+
+/* Auth Cards */
+.auth-card {
+  background: var(--bg-card);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard);
+  padding: 3rem;
+}
+
+.auth-header-tag {
+  background: var(--primary-yellow);
+  border: var(--border-thin);
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-weight: 900;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+/* Dashboards and Charts */
+.chart-box {
+  background: var(--bg-card);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  transition: var(--transition-fast);
+}
+
+.chart-box:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 10px 10px 0px var(--shadow-color);
+  background-color: var(--primary-yellow);
+}
+
+.chart-box:hover .auth-header-tag {
+  color: black;
+  background-color: white;
+  border-color: black;
+}
+
+
+
+
+
+.table-container {
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard);
+  background: var(--bg-card);
+  overflow: auto;
+  max-height: 500px;
+  position: relative;
+  width: 100%;
+}
+
+
+/* Custom Brutalist Scrollbar */
+.table-container::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-left: var(--border-thin);
+  border-top: var(--border-thin);
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border: 2px solid var(--bg-card);
+  /* was #f1f1f1 */
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-yellow);
+}
+
+.table {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.table th {
+  background: var(--primary-yellow);
+  border-bottom: var(--border-thick) !important;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 1rem !important;
+}
+
+.table td {
+  border-bottom: var(--border-thin) !important;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0.8rem 1rem !important;
+  background-color: var(--bg-card);
+}
+
+
+/* Custom Tooltip */
+.custom-tooltip {
+  position: fixed;
+  background: var(--bg-card);
+  border: 3px solid var(--border-color);
+  box-shadow: 4px 4px 0px var(--shadow-color);
+  padding: 10px 15px;
+  z-index: 10000;
+  pointer-events: none;
+  display: none;
+  min-width: 150px;
+  color: var(--text-main);
+}
+
+.tooltip-title {
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  margin-bottom: 5px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 3px;
+}
+
+.tooltip-value {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--primary-yellow);
+  -webkit-text-stroke: 1px black;
+}
+
+/* Loading Overlay */
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 214, 0, 0.95);
+  /* Semi-transparent yellow */
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  border: 10px solid black;
+}
+
+.loader-box {
+  background: var(--bg-card);
+  border: var(--border-thick);
+  box-shadow: 10px 10px 0px var(--shadow-color);
+  padding: 3rem;
+  text-align: center;
+  color: black;
+  /* Keep loader text black if overlay is yellow? */
+}
+
+/* Wait, overlay is rgba(255, 214, 0, 0.95) which is yellow. So box should probably be white/black. 
+   If global bg-card is dark, dark box on yellow overlay is fine.
+   But let's ensure visibility. */
+.loader-box {
+  color: var(--text-main);
+}
+
+.loader-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--border-color);
+  border-top: 5px solid var(--bg-main);
+  animation: spin 0.6s linear infinite;
+  margin: 0 auto 1.5rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loader-text {
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 1.5rem;
+  letter-spacing: -1px;
+}
+
+/* --- DRAG & DROP UPLOAD SYSTEM --- */
+.drop-zone {
+  border: 3px dashed var(--border-color);
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: var(--bg-card);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* Smoother cubic-bezier transition */
+  cursor: pointer;
+  position: relative;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  /* Added to contain any potential pseudo-element effects */
+}
+
+.drop-zone.active {
+  border-style: solid;
+  background-color: var(--primary-yellow);
+  transform: scale(1.03);
+  /* slightly more pronounced scale */
+  box-shadow: 12px 12px 0px var(--shadow-color);
+  /* deeper shadow */
+  border-color: var(--border-color);
+  color: black;
+  /* Force black text on yellow */
+}
+
+.drop-zone.active .drop-zone-icon {
+  transform: scale(1.2);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.drop-zone-text {
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.drop-zone-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.file-info-display {
+  display: none;
+  background: black;
+  color: white;
+  padding: 0.6rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  margin-top: 1rem;
+  border: var(--border-thin);
+}
+
+.form-control-hidden {
+  display: none !important;
+}
+
+/* ===============================
+   RESPONSIVE DESIGN SYSTEM
+   =============================== */
+
+/* Tablet & Smaller (Max 991px) */
+@media (max-width: 991px) {
+  .hero-heading {
+    font-size: 4rem;
+  }
+
+  .auth-card {
+    margin-top: 3rem;
+    padding: 2rem;
+  }
+
+  .stat-card {
+    padding: 1.2rem;
+  }
+
+  .stat-value {
+    font-size: 2.2rem;
+  }
+}
+
+/* Mobile Devices (Max 767px) */
+@media (max-width: 767px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+    overflow-x: hidden;
+  }
+
+  .row {
+    margin-left: -10px;
+    margin-right: -10px;
+  }
+
+  .col-12,
+  .col-md-6,
+  .col-lg-8,
+  .col-lg-4 {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .hero-heading {
+    font-size: 2.8rem;
+    line-height: 1;
+    word-break: break-word;
+  }
+
+  .navbar {
+    padding: 0.8rem 0;
+  }
+
+  .navbar-brand {
+    font-size: 1.4rem;
+  }
+
+  .btn-neo,
+  .btn-neo-outline {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+    width: auto;
+  }
+
+  .neo-box {
+    padding: 1.25rem;
+    margin-left: 0;
+    margin-right: 0;
+    box-shadow: 4px 4px 0px black;
+  }
+
+  .stat-card {
+    padding: 1rem;
+    box-shadow: 4px 4px 0px black;
+  }
+
+  .stat-value {
+    font-size: 1.8rem;
+  }
+
+  .chart-box {
+    padding: 0.8rem;
+    box-shadow: 4px 4px 0px black;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .plotly-chart {
+    height: 350px !important;
+    width: 100% !important;
+  }
+
+  .auth-card {
+    padding: 1.25rem;
+    box-shadow: 4px 4px 0px black;
+  }
+
+  /* Mobile Upload Fallback (Only for Mobile) */
+  .drop-zone {
+    border: none;
+    padding: 0;
+    margin-bottom: 2rem;
+    background: transparent;
+  }
+
+  .drop-zone-icon,
+  .drop-zone-text,
+  .drop-zone p {
+    display: none;
+  }
+
+  .drop-zone .btn-neo-outline {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  /* Fix for overflowing Insights bullet points */
+  #insights-section {
+    padding: 1rem;
+  }
+
+  #insights-section .row {
+    margin: 0;
+  }
+
+  #insights-section .col-md-6 {
+    padding: 0;
+    margin-bottom: 1rem;
+  }
+
+  .loader-box {
+    padding: 2rem;
+    margin: 1rem;
+    width: 90%;
+  }
+
+  .loader-text {
+    font-size: 1.1rem;
+  }
+
+  footer {
+    padding: 2rem 1rem;
+    margin-top: 2rem;
+  }
+
+  .footer-text {
+    font-size: 0.7rem;
+  }
+
+  /* Table styling for mobile - ensure it stays inside container */
+  .table-container {
+    max-width: 100%;
+    border-width: 2px;
+  }
+
+  .table {
+    font-size: 0.75rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.4rem !important;
+  }
+}
+
+/* Smallest Devices (Max 480px) */
+@media (max-width: 480px) {
+  .hero-heading {
+    font-size: 2.2rem;
+  }
+
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+
+  .gap-3 {
+    gap: 0.5rem !important;
+  }
+
+  .btn-neo,
+  .btn-neo-outline {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+}

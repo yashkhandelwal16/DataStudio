@@ -116,6 +116,67 @@ def signup():
             
     return render_template("signup.html")
 
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        email = request.form.get("email")
+        
+        if not supabase:
+            flash("Supabase is not configured. Please check your .env file.", "danger")
+            return redirect(url_for("forgot_password"))
+            
+        try:
+            # Send reset email
+            # We'll use the current host but redirecting to /reset-password
+            redirect_url = url_for('reset_password', _external=True)
+            supabase.auth.reset_password_for_email(email, {"redirect_to": redirect_url})
+            flash("If an account exists, a reset link has been sent to your email.", "success")
+            return redirect(url_for("login"))
+        except Exception as e:
+            flash(f"Error: {str(e)}", "danger")
+            
+    return render_template("forgot_password.html")
+
+@app.route("/reset-password", methods=["GET", "POST"])
+def reset_password():
+    # Note: On GET, the user arrives here with the token in the URL fragment from email
+    # Flask cannot read the fragment, but if they submit the form, we want them to be authenticated.
+    if request.method == "POST":
+        new_password = request.form.get("password")
+        
+        # We need an active session to update user information.
+        # In this simplistic Flask approach, we expect the user to have been automatically 
+        # authenticated via the link (if handled by JS) OR we'd need some magic.
+        # However, for a standard Supabase-Flask setup, we can try to update even without 
+        # a local Flask session if they just arrived with a token (token handling needs JS).
+        # Let's try the simple update_user if access_token is in session.
+        
+        if "access_token" not in session:
+           flash("Session expired or invalid link. Please request a new reset link.", "danger")
+           return redirect(url_for("forgot_password"))
+
+        try:
+            # Set the current session in the client if we have the tokens
+            supabase.auth.set_session(session["access_token"], session.get("refresh_token"))
+            supabase.auth.update_user({"password": new_password})
+            flash("Password updated successfully! You can now log in.", "success")
+            return redirect(url_for("login"))
+        except Exception as e:
+            flash(f"Failed to update password: {str(e)}", "danger")
+            
+    return render_template("reset_password.html")
+
+@app.route("/set-session", methods=["POST"])
+def set_session():
+    data = request.json
+    if "access_token" in data:
+        session["access_token"] = data["access_token"]
+        session["refresh_token"] = data.get("refresh_token")
+        # Optional: decode token to get user id
+        # session["user"] = ... 
+        return {"status": "ok"}
+    return {"status": "error"}, 400
+
 @app.route("/logout")
 def logout():
     session.clear()

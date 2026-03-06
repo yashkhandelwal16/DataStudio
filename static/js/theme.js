@@ -90,11 +90,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Dark Mode Toggle
   const toggleBtn = document.getElementById('theme-toggle');
 
+  const updateToggleBtnUI = (isDark) => {
+    if (!toggleBtn) return;
+
+    // Check if the button has a span (like in settings.html) or is just an icon
+    const spanElement = toggleBtn.querySelector('span');
+    if (spanElement || toggleBtn.innerText.includes('Toggle')) {
+      toggleBtn.innerHTML = `<span>Toggle ${isDark ? 'Light' : 'Dark'} Mode</span> ${isDark ? '☀️' : '🌙'}`;
+    } else {
+      toggleBtn.innerHTML = isDark ? '☀️' : '🌙';
+    }
+  };
+
   // Check for saved theme preference
   const currentTheme = localStorage.getItem("theme");
   if (currentTheme === "dark") {
     document.documentElement.setAttribute("data-theme", "dark");
-    if (toggleBtn) toggleBtn.innerHTML = "☀️";
+    updateToggleBtnUI(true);
+  } else {
+    updateToggleBtnUI(false);
   }
 
   if (toggleBtn) {
@@ -102,10 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
       let theme = "light";
       if (document.documentElement.getAttribute("data-theme") === "dark") {
         document.documentElement.removeAttribute("data-theme");
-        toggleBtn.innerHTML = "🌙";
+        updateToggleBtnUI(false);
       } else {
         document.documentElement.setAttribute("data-theme", "dark");
-        toggleBtn.innerHTML = "☀️";
+        updateToggleBtnUI(true);
         theme = "dark";
       }
       localStorage.setItem("theme", theme);

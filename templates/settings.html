@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Data Studio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        (function () {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="/">
+                DATA STUDIO.
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="/" class="btn-neo-outline py-2 px-4">Back</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-5 pt-5 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="auth-header-tag mb-4">ACCOUNT PREFERENCES</div>
+                <h1 class="hero-heading mb-5">SETTINGS<span class="highlight">.</span></h1>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="neo-box p-3 mb-4"
+                    style="background-color: var(--primary-yellow) !important; box-shadow: 4px 4px 0px var(--shadow-color); border: 2px solid black; font-weight: 900; color: black;">
+                    {{ message }}</div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <div class="neo-box p-4 p-md-5" style="border-width: 3px;">
+                    <h3 class="fw-black text-uppercase border-bottom border-dark border-3 pb-2 mb-4"
+                        style="color: var(--text-main);">User Account</h3>
+                    <div class="d-flex align-items-center mb-5 flex-wrap gap-2">
+                        <span class="fw-bolder text-uppercase" style="color: var(--text-main);">LOGGED AS:</span>
+                        <span
+                            style="background-color: var(--text-main); color: var(--bg-card); padding: 0.4rem 1rem; font-weight: 900; font-size: 1.1rem; border: 2px solid var(--text-main);">
+                            {{ session.get('email', 'Guest') }}
+                        </span>
+                    </div>
+
+                    <h3 class="fw-black text-uppercase border-bottom border-dark border-3 pb-2 mb-4 mt-5"
+                        style="color: var(--text-main);">Appearance</h3>
+                    <div class="d-flex align-items-center mb-5 flex-wrap gap-3">
+                        <span class="fw-bolder text-uppercase" style="color: var(--text-main);">THEME:</span>
+                        <button id="theme-toggle" class="btn-neo py-2 px-4 d-flex align-items-center gap-2"
+                            style="font-size: 1.1rem; line-height: 1;">
+                            <span>Toggle Dark Mode</span> 🌙
+                        </button>
+                    </div>
+
+                    <h3 class="fw-black text-uppercase border-bottom border-dark border-3 pb-2 mb-4 mt-5"
+                        style="color: var(--text-main);">Danger Zone</h3>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="/logout" class="btn-neo-outline py-2 px-4 fw-bold">Log out</a>
+                        <form action="/delete-account" method="POST"
+                            onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');"
+                            class="m-0">
+                            <button type="submit" class="btn-neo py-2 px-4 shadow-none fw-bold"
+                                style="background-color: #ff4444 !important; border-color: black !important; color: white !important;">Delete
+                                Account</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-text">
+                Made with <span class="footer-heart">❤️</span> by Yash Khandelwal | © 2024–2026
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+</body>
+
+</html>

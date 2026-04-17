@@ -8,104 +8,93 @@ Data Studio is a next-generation web application designed for immersive
 data exploration. It allows users to upload datasets (CSV, Excel, JSON) and 
 automatically generates summary statistics and interactive 3D statistical 
 models. The project features a premium Neo-Brutalist design system with a 
-high-performance WebGL rendering engine.
+high-performance WebGL rendering engine and AI-driven insights.
 
 2. TECHNOLOGY STACK (THE ENGINE)
 --------------------------------------------------------------------------------
-* BACKEND FRAMEWORK: Flask (Python) + Flask-Compress + Gunicorn
+* BACKEND FRAMEWORK: Flask (Python 3.10+) + Flask-Compress + Gunicorn
   - Handles routing, session management, and Gzip-compressed data transfer.
-* DATA PROCESSING: Pandas & NumPy (C-Parsing Engine)
+* DATA PROCESSING: Pandas & NumPy (High-Speed C-Parsing Engine)
   - Ultra-fast data ingestion and multi-dimensional mathematical calculations.
 * VISUALIZATION: Plotly (3D WebGL Engine)
-  - Renders 3D Distribution, 3D Trend, 3D Categorical, and 3D Volumetric charts.
-* DATABASE & AUTH: Supabase + Background Threading
-  - Secure auth with non-blocking cloud storage uploads.
-* FRONTEND: HTML5, CSS3, JavaScript (Vanilla) + Bootstrap 5
-  - Built with a custom "Modern Neo-Brutalist" design system.
-  - AI Insights Engine: Natural language data storytelling.
-  - Fully Responsive UI: Optimized for Mobile, Tablet, and Desktop.
-  - Interactive Tooltip Engine & High-Performance Loading States.
+  - Renders 3D Distribution, 3D Trend, and 3D Volumetric charts using WebGL.
+* DATABASE & AUTH: Supabase (Auth + PostgreSQL)
+  - Secure login, OTP verification, and password recovery systems.
+* CLOUD STORAGE: Supabase Storage API
+  - Non-blocking background threading for cloud dataset archival.
+* FRONTEND TOOLING: Vite 7.0 + Node.js
+  - High-performance asset bundling and modern development workflow.
+* STYLING: CSS3 (Custom Neo-Brutalist Tokens) + Bootstrap 5.3
+  - Features glassmorphism, high-contrast palettes, and dark mode support.
+* AI ENGINE: Natural Language Insights (Storytelling Engine)
+  - Automated narrative generation for descriptive data analysis.
 
 3. KEY FEATURES
 --------------------------------------------------------------------------------
-* Secure Login System: Normal Email/Password Sign-up and Sign-in.
-* Session Protection: Only logged-in users can access the dashboard.
-* Multi-format Support: Processes .csv, .xlsx, .xls, and .json files.
+* Pro Auth System: 
+  - Email/Password login with secure Flask sessions.
+  - OTP (One-Time Password) verification for new registrations.
+  - Forgot Password / Password Reset workflow via Supabase.
+* Multi-format Support: Native processing for .csv, .xlsx, .xls, and .json.
 * Advanced Upload UI: 
-  - Desktop/Laptop: Interactive Drag & Drop Area with visual feedback.
-  - Mobile/Tablet: Streamlined "Choose File" interface for better usability.
-  - Unified processing logic for all devices.
+  - Interactive Drag & Drop zone with scale-up hover effects.
+  - Real-time file info display and validation.
 * Interactive 3D Visualization: 
-  - 360° Rotation: Explore charts from every angle using WebGL.
-  - Orbit Interaction: Zoom and pan through complex data structures.
-  - Interactive Tooltips: Hover over any 3D point for precise metrics.
+  - 360° WebGL Rotation: Explore data from every spatial angle.
+  - Interactive Tooltips: Real-time metric extraction on data point hover.
 * Neo-Brutalist UI/UX: 
-  - High-contrast yellow/black palette.
-  - Recursive Hub Interactions: Visual boxes pop and change color on hover.
-  - Heartbeat Footer: Animated branding for a premium feel.
-* Automated Analytics: 
-  - Descriptive statistics (Mean, Median, etc.) calculated automatically.
-  - Fast C-Engine Parser: Optimized for massive CSV/Excel ingestion.
-  - Downsampling Engine: ensures smooth performance for massive datasets.
-* Performance UI:
-  - Neo-Brutalist Loading Overlay: Instant visual feedback during heavy processing.
-  - Gzip Compression: Reduces 3D model transmission speed by up to 80%.
-* AI Insights: 
-  - Structured Narrative: Automated bullet-point storytelling of data.
-  - Trend Detection: Identifies upward, downward, or stable trajectories.
-  - High/Low/Avg Extraction: Instant extraction of critical metrics.
+  - Distinctive Yellow/Black high-contrast design.
+  - Dark Mode: Full semantic color reversal for low-light environments.
+  - Heartbeat branding and marquee animations.
+* Performance Optimization:
+  - Background Uploads: Storage sync doesn't block the analysis output.
+  - Gzip Compression: Reduces JSON visualization weight by ~80%.
 
 4. THE WORKFLOW (STEP-BY-STEP PROCESS)
 --------------------------------------------------------------------------------
-STEP 1: USER REGISTRATION
-- The user signs up at /signup. 
-- Supabase Auth stores the credentials securely.
+STEP 1: USER REGISTRATION & VERIFICATION
+- User signs up at /signup.
+- Supabase sends an OTP; user verifies at /verify-otp to activate account.
 
 STEP 2: AUTHENTICATION
-- User logs in at /login. 
-- A secure Flask session is established.
+- User logs in at /login.
+- A secure session establishes tokens (access/refresh) for cloud interaction.
 
-STEP 3: DATA UPLOAD
-- On the home page, the user selects a dataset.
-- Files are processed directly from memory for maximum speed and security.
+STEP 3: DATA INGESTION
+- User uploads a dataset via the Neo-Brutalist Drag & Drop interface.
+- Flask reads the file bytes directly into memory (zero local disk spill).
 
-STEP 4: 3D ANALYSIS ENGINE
-- app.py reads file bytes using the high-speed 'C' mapping engine.
-- A background thread starts the Supabase cloud upload (non-blocking).
-- Plotly WebGL creates JSON-based high-performance 3D visualizations.
+STEP 4: HYBRID PROCESSING
+- DATA ENGINE: Pandas parses the file using the high-speed 'C' engine.
+- CLOUD SYNC: A background thread initiates a Supabase Storage upload.
+- VIZ ENGINE: Plotly generates WebGL-based JSON models for the dashboard.
 
-STEP 5: IMMERSIVE DASHBOARD
-- The dashboard renders 3D models alongside clean, readable data tables.
-- AI Insights provide a structured text narrative of the data's "ground truth."
-- Users can naturally explore insights by rotating and interacting with 
-  3D models while tables and narrative bullet points provide context.
+STEP 5: IMMERSIVE ANALYSIS
+- The dashboard renders 3D models alongside AI-generated narrative insights.
+- Users explore the "ground truth" of their data with interactive charts.
 
 5. DIRECTORY STRUCTURE
 --------------------------------------------------------------------------------
 /
-├── app.py              # Main Flask application logic
-├── Procfile            # Deployment instructions for Render/Heroku
-├── runtime.txt         # Specifies Python version for production
-├── .env                # Secret keys and Supabase credentials
-├── requirements.txt    # List of all Python libraries (Pandas, Plotly, NumPy)
-├── supabase_setup.sql  # Database configuration for Supabase
-├── static/
-│   ├── css/style.css   # Neo-Brutalist design system & animations
-│   ├── js/theme.js     # Interaction engine & tooltip management
-│   └── charts/         # (Legacy) Standard analysis assets
-└── templates/          # HTML pages (Index, Dashboard, Login, Signup)
+├── app.py              # Main Flask server (Routing & Logic)
+├── utils/              # Calculation, Insights, and Viz engines
+├── static/             # Design tokens, Neo-Brutalist CSS, and Theme JS
+├── templates/          # Jinja2 HTML templates (Login, Settings, Dashboard)
+├── src/                # Vite source assets and JS modules
+├── package.json        # Frontend dependencies (Vite 7.x)
+├── requirements.txt    # Backend dependencies (Flask, Pandas, Supabase)
+├── Procfile            # Cloud deployment instructions (Render/Heroku)
+├── .env                # Environment secrets and API credentials
+└── supabase_setup.sql  # Database schema for user data and storage
 
 6. HOW TO RUN THE PROJECT
 --------------------------------------------------------------------------------
-1. Ensure Python 3.10+ is installed.
-2. Activate virtual environment: .\venv\Scripts\activate
-3. Install dependencies: pip install -r requirements.txt
-4. Configure .env with your Supabase URL, Key, and Secret Key.
-5. Run the server (Local): python app.py
-6. Run the server (Production): gunicorn app:app
-7. Open browser to: http://127.0.0.1:5000
+1. Setup Environments: Install Python 3.10+ and Node.js.
+2. Backend: `pip install -r requirements.txt`
+3. Frontend: `npm install` followed by `npm run dev` (for Vite tools).
+4. Config: Populate `.env` with Supabase and Flask secret keys.
+5. Launch: `python app.py` (Local) or `gunicorn app:app` (Prod).
 
 ================================================================================
              Made with ❤️ by Yash Khandelwal | © 2024–2026
 ================================================================================
-

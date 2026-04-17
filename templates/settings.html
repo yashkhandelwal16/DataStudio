@@ -26,7 +26,15 @@
                 DATA STUDIO.
             </a>
             <div class="d-flex align-items-center gap-3">
+                <button class="btn-neo-outline py-2 px-3 theme-toggle" style="font-size: 1.2rem; line-height: 1;"
+                    aria-label="Toggle Dark Mode">
+                    🌙
+                </button>
+                {% if session.get('last_filename') %}
+                <a href="/dashboard" class="btn-neo-outline py-2 px-4">Back</a>
+                {% else %}
                 <a href="/" class="btn-neo-outline py-2 px-4">Back</a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -62,7 +70,7 @@
                         style="color: var(--text-main);">Appearance</h3>
                     <div class="d-flex align-items-center mb-5 flex-wrap gap-3">
                         <span class="fw-bolder text-uppercase" style="color: var(--text-main);">THEME:</span>
-                        <button id="theme-toggle" class="btn-neo py-2 px-4 d-flex align-items-center gap-2"
+                        <button id="theme-toggle" class="btn-neo py-2 px-4 d-flex align-items-center gap-2 theme-toggle"
                             style="font-size: 1.1rem; line-height: 1;">
                             <span>Toggle Dark Mode</span> 🌙
                         </button>

@@ -88,18 +88,20 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 3. Dark Mode Toggle
-  const toggleBtn = document.getElementById('theme-toggle');
+  const themeToggles = document.querySelectorAll('.theme-toggle');
 
   const updateToggleBtnUI = (isDark) => {
-    if (!toggleBtn) return;
+    themeToggles.forEach(btn => {
+      if (!btn) return;
 
-    // Check if the button has a span (like in settings.html) or is just an icon
-    const spanElement = toggleBtn.querySelector('span');
-    if (spanElement || toggleBtn.innerText.includes('Toggle')) {
-      toggleBtn.innerHTML = `<span>Toggle ${isDark ? 'Light' : 'Dark'} Mode</span> ${isDark ? '☀️' : '🌙'}`;
-    } else {
-      toggleBtn.innerHTML = isDark ? '☀️' : '🌙';
-    }
+      // Check if the button has a span (like in settings.html) or is just an icon
+      const spanElement = btn.querySelector('span');
+      if (spanElement || btn.innerText.includes('Toggle')) {
+        btn.innerHTML = `<span>Toggle ${isDark ? 'Light' : 'Dark'} Mode</span> ${isDark ? '☀️' : '🌙'}`;
+      } else {
+        btn.innerHTML = isDark ? '☀️' : '🌙';
+      }
+    });
   };
 
   // Check for saved theme preference
@@ -111,18 +113,21 @@ document.addEventListener('DOMContentLoaded', () => {
     updateToggleBtnUI(false);
   }
 
-  if (toggleBtn) {
-    toggleBtn.addEventListener("click", () => {
-      let theme = "light";
-      if (document.documentElement.getAttribute("data-theme") === "dark") {
-        document.documentElement.removeAttribute("data-theme");
-        updateToggleBtnUI(false);
-      } else {
-        document.documentElement.setAttribute("data-theme", "dark");
-        updateToggleBtnUI(true);
-        theme = "dark";
-      }
-      localStorage.setItem("theme", theme);
+  if (themeToggles.length > 0) {
+    themeToggles.forEach(btn => {
+      btn.addEventListener("click", () => {
+        let theme = "light";
+        if (document.documentElement.getAttribute("data-theme") === "dark") {
+          document.documentElement.removeAttribute("data-theme");
+          updateToggleBtnUI(false);
+          theme = "light";
+        } else {
+          document.documentElement.setAttribute("data-theme", "dark");
+          updateToggleBtnUI(true);
+          theme = "dark";
+        }
+        localStorage.setItem("theme", theme);
+      });
     });
   }
 });

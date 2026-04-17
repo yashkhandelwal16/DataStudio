@@ -27,7 +27,11 @@
         DATA STUDIO
       </a>
       <div class="d-flex align-items-center gap-3">
-        <a href="/" class="btn-neo-outline py-2 px-4">New File</a>
+        <button class="btn-neo-outline py-2 px-3 theme-toggle" style="font-size: 1.2rem; line-height: 1;"
+          aria-label="Toggle Dark Mode">
+          🌙
+        </button>
+        <a href="/new-file" class="btn-neo-outline py-2 px-4">New File</a>
         <a href="/settings" class="btn-neo-outline py-2 px-4">Settings ⚙️</a>
       </div>
     </div>
@@ -121,13 +125,13 @@
       <div class="col-lg-8">
         <h2 class="mb-4 border-bottom border-dark border-4 pb-2 d-inline-block fw-black text-uppercase">Data Preview
         </h2>
-        <div class="table-container bg-white">
+        <div class="table-container">
           {{ preview_table|safe }}
         </div>
       </div>
       <div class="col-lg-4">
         <h2 class="mb-4 border-bottom border-dark border-4 pb-2 d-inline-block fw-black text-uppercase">Structure</h2>
-        <div class="table-container bg-white">
+        <div class="table-container">
           {{ column_info_table|safe }}
         </div>
       </div>
@@ -137,7 +141,7 @@
       <div class="col-12">
         <h2 class="mb-4 border-bottom border-dark border-4 pb-2 d-inline-block fw-black text-uppercase">Summary Stats
         </h2>
-        <div class="table-container bg-white">
+        <div class="table-container">
           {{ summary_table|safe }}
         </div>
       </div>

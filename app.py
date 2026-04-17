@@ -291,6 +291,14 @@ def index():
             file_bytes = file.read()
             filename = secure_filename(file.filename)
             
+            # Save file locally for persistence
+            local_path = UPLOAD_FOLDER / filename
+            with open(local_path, "wb") as f:
+                f.write(file_bytes)
+            
+            # Store in session
+            session["last_filename"] = filename
+            
             # Get tokens from session to authenticate the background worker
             access_token = session.get("access_token")
             refresh_token = session.get("refresh_token")
@@ -351,38 +359,65 @@ def index():
                 # pass tokens explicitly
                 threading.Thread(target=upload_to_supabase, args=(file_bytes, filename, access_token, refresh_token)).start()
 
-            # Process the data directly from bytes (No local file saving)
-            df = load_dataset(file_content=file_bytes, filename=filename)
-            preview_table = df.head(20).to_html(
-                classes="table table-hover table-sm",
-                border=0,
-                index=False,
-            )
-
-            summary_table = basic_statistics(df)
-            column_info_table = column_overview(df)
-            text_insights = generate_text_insights(df)
-            charts = create_charts(df) # Returns JSON strings now
-
-            row_count = len(df)
-            column_count = df.shape[1]
-
-            return render_template(
-                "dashboard.html",
-                preview_table=preview_table,
-                summary_table=summary_table,
-                column_info_table=column_info_table,
-                text_insights=text_insights,
-                charts=charts,
-                row_count=row_count,
-                column_count=column_count,
-                filename=filename,
-            )
+            return redirect(url_for("dashboard"))
         except Exception as exc:
             flash(f"Error processing file: {exc}", "danger")
             return redirect(url_for("index"))
 
     return render_template("index.html")
+
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    filename = session.get("last_filename")
+    if not filename:
+        flash("No active session found. Please upload a file.", "warning")
+        return redirect(url_for("index"))
+
+    local_path = UPLOAD_FOLDER / filename
+    if not local_path.exists():
+        flash("File no longer exists. Please re-upload.", "warning")
+        session.pop("last_filename", None)
+        return redirect(url_for("index"))
+
+    try:
+        # Process the data from the saved local file
+        df = load_dataset(file_path=str(local_path))
+        
+        preview_table = df.head(20).to_html(
+            classes="table table-hover table-sm",
+            border=0,
+            index=False,
+        )
+
+        summary_table = basic_statistics(df)
+        column_info_table = column_overview(df)
+        text_insights = generate_text_insights(df)
+        charts = create_charts(df)
+
+        row_count = len(df)
+        column_count = df.shape[1]
+
+        return render_template(
+            "dashboard.html",
+            preview_table=preview_table,
+            summary_table=summary_table,
+            column_info_table=column_info_table,
+            text_insights=text_insights,
+            charts=charts,
+            row_count=row_count,
+            column_count=column_count,
+            filename=filename,
+        )
+    except Exception as exc:
+        flash(f"Error loading dashboard: {exc}", "danger")
+        return redirect(url_for("index"))
+
+@app.route("/new-file")
+@login_required
+def new_file():
+    session.pop("last_filename", None)
+    return redirect(url_for("index"))
 
 @app.route("/health")
 def health():

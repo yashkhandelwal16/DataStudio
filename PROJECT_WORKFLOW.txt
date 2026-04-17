@@ -96,5 +96,5 @@ STEP 5: IMMERSIVE ANALYSIS
 5. Launch: `python app.py` (Local) or `gunicorn app:app` (Prod).
 
 ================================================================================
-             Made with ❤️ by Yash Khandelwal | © 2024–2026
+             Made with ❤️ by Yash Khandelwal | © 2025–2026
 ================================================================================

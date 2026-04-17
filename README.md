@@ -101,4 +101,4 @@ Data Studio is designed for immersive data exploration. It allows users to uploa
 
 ---
 
-Made with ❤️ by Yash Khandelwal | © 2024–2026
+Made with ❤️ by Yash Khandelwal | © 2025–2026

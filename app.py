@@ -27,6 +27,10 @@ BASE_DIR = Path(__file__).resolve().parent
 UPLOAD_FOLDER = BASE_DIR / "uploads"
 CHART_FOLDER = BASE_DIR / "static" / "charts"
 
+# Ensure directories exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(CHART_FOLDER, exist_ok=True)
+
 ALLOWED_EXTENSIONS = {".csv", ".xlsx", ".xls", ".json"}
 
 # Supabase Setup

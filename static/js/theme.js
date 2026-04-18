@@ -87,49 +87,56 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 3. Dark Mode Toggle
+  // 3. Dark Mode Toggle System
   const themeToggles = document.querySelectorAll('.theme-toggle');
 
-  const updateToggleBtnUI = (isDark) => {
+  const updateToggleUI = (isDark) => {
     themeToggles.forEach(btn => {
       if (!btn) return;
 
-      // Check if the button has a span (like in settings.html) or is just an icon
-      const spanElement = btn.querySelector('span');
-      if (spanElement || btn.innerText.includes('Toggle')) {
+      const hasText = btn.classList.contains('btn-neo') || btn.querySelector('span');
+      
+      if (hasText) {
+        // Text-based toggle (Settings page)
         btn.innerHTML = `<span>Toggle ${isDark ? 'Light' : 'Dark'} Mode</span> ${isDark ? '☀️' : '🌙'}`;
       } else {
+        // Icon-only toggle
         btn.innerHTML = isDark ? '☀️' : '🌙';
       }
     });
+
+    // Update document attribute
+    if (isDark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+    }
   };
 
-  // Check for saved theme preference
-  const currentTheme = localStorage.getItem("theme");
-  if (currentTheme === "dark") {
-    document.documentElement.setAttribute("data-theme", "dark");
-    updateToggleBtnUI(true);
-  } else {
-    updateToggleBtnUI(false);
-  }
+  // Initialize from storage or system preference
+  const initTheme = () => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDarkInitial = savedTheme === 'dark' || (!savedTheme && prefersDark);
+    updateToggleUI(isDarkInitial);
+  };
+  
+  initTheme();
 
-  if (themeToggles.length > 0) {
-    themeToggles.forEach(btn => {
-      btn.addEventListener("click", () => {
-        let theme = "light";
-        if (document.documentElement.getAttribute("data-theme") === "dark") {
-          document.documentElement.removeAttribute("data-theme");
-          updateToggleBtnUI(false);
-          theme = "light";
-        } else {
-          document.documentElement.setAttribute("data-theme", "dark");
-          updateToggleBtnUI(true);
-          theme = "dark";
-        }
-        localStorage.setItem("theme", theme);
-      });
+  // Sync on back button (handle browser back-forward cache)
+  window.addEventListener('pageshow', (event) => {
+    initTheme();
+  });
+
+  // Attach click listeners
+  themeToggles.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isCurrentlyDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      updateToggleUI(!isCurrentlyDark);
     });
-  }
+  });
 });
 
 

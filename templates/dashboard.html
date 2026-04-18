@@ -14,6 +14,8 @@
       const theme = localStorage.getItem('theme');
       if (theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
       }
     })();
   </script>
@@ -27,6 +29,10 @@
         DATA STUDIO
       </a>
       <div class="d-flex align-items-center gap-3">
+        <button class="btn-neo-outline py-2 px-3 theme-toggle" style="font-size: 1.2rem; line-height: 1;"
+          aria-label="Toggle Dark Mode">
+          🌙
+        </button>
         <button class="btn-neo-outline py-2 px-4" onclick="history.back()">Back ↩</button>
 
         <a href="/new-file" class="btn-neo-outline py-2 px-4">New File</a>

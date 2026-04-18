@@ -43,13 +43,18 @@ body {
   /* Prevent horizontal scroll */
   width: 100%;
   position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 html {
   overflow-x: hidden;
   width: 100%;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -256,7 +261,7 @@ body::-webkit-scrollbar {
 
 /* Footer */
 footer {
-  margin-top: 5rem;
+  margin-top: auto;
   padding: 4rem 2rem;
   border-top: var(--border-thick);
   background: var(--bg-card);

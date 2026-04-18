@@ -314,7 +314,7 @@ def index():
                     import time
                     max_retries = 3
                     base_delay = 1  # seconds
-                    bucket_name = "upload files"
+                    bucket_name = os.getenv("SUPABASE_BUCKET", "upload files")
                     
                     # Create a dedicated client for this thread to avoid global state issues
                     # and ensure we are authenticated as the specific user.

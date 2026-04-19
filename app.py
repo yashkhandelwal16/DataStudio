@@ -27,9 +27,19 @@ BASE_DIR = Path(__file__).resolve().parent
 UPLOAD_FOLDER = BASE_DIR / "uploads"
 CHART_FOLDER = BASE_DIR / "static" / "charts"
 
-# Ensure directories exist
+# Ensure directories exist and are clean
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(CHART_FOLDER, exist_ok=True)
+
+# Clear local uploads folder on server start to keep deployment storage clean
+if UPLOAD_FOLDER.exists():
+    for f in os.listdir(UPLOAD_FOLDER):
+        file_p = UPLOAD_FOLDER / f
+        if file_p.is_file():
+            try:
+                os.remove(file_p)
+            except:
+                pass
 
 ALLOWED_EXTENSIONS = {".csv", ".xlsx", ".xls", ".json"}
 
@@ -301,11 +311,21 @@ def index():
             return redirect(url_for("index"))
 
         try:
+            # Cleanup previous local file if it exists to save space
+            old_filename = session.get("last_filename")
+            if old_filename:
+                old_path = UPLOAD_FOLDER / old_filename
+                if old_path.exists():
+                    try:
+                        os.remove(old_path)
+                    except:
+                        pass
+
             # Read file bytes
             file_bytes = file.read()
             filename = secure_filename(file.filename)
             
-            # Save file locally for persistence
+            # Save file locally for current session processing
             local_path = UPLOAD_FOLDER / filename
             with open(local_path, "wb") as f:
                 f.write(file_bytes)
@@ -466,11 +486,9 @@ def health():
 
 
 if __name__ == "__main__":
+    # Use PORT from environment (default 5000 for local, 10000 for Render)
     port = int(os.environ.get("PORT", 5000))
+    # Keep debug=True for now, but deployment platforms usually override this via environment
     app.run(host="0.0.0.0", port=port, debug=True)
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
 
 

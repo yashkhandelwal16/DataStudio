@@ -221,8 +221,18 @@ def set_session():
 
 @app.route("/logout")
 def logout():
+    # Cleanup local file before logging out
+    filename = session.get("last_filename")
+    if filename:
+        local_path = UPLOAD_FOLDER / filename
+        if local_path.exists():
+            try:
+                os.remove(local_path)
+            except:
+                pass
+    
     session.clear()
-    flash("You have been logged out.", "info")
+    flash("Logged out successfully.", "success")
     return redirect(url_for("login"))
 
 @app.route("/settings")
@@ -380,9 +390,23 @@ def dashboard():
 
     local_path = UPLOAD_FOLDER / filename
     if not local_path.exists():
-        flash("File no longer exists. Please re-upload.", "warning")
-        session.pop("last_filename", None)
-        return redirect(url_for("index"))
+        # Cloud Fallback: Try to download from Supabase if local file is missing
+        if supabase:
+            try:
+                bucket_name = os.getenv("SUPABASE_BUCKET", "upload files")
+                with open(local_path, "wb") as f:
+                    res = supabase.storage.from_(bucket_name).download(filename)
+                    f.write(res)
+                # After download, proceed as normal
+            except Exception as e:
+                print(f"DEBUG: Cloud fallback failed: {e}")
+                flash("Your file is no longer available locally or in the cloud. Please re-upload.", "danger")
+                session.pop("last_filename", None)
+                return redirect(url_for("index"))
+        else:
+            flash("Session expired or file not found. Please upload again.", "danger")
+            session.pop("last_filename", None)
+            return redirect(url_for("index"))
 
     try:
         # Process the data from the saved local file
@@ -420,6 +444,16 @@ def dashboard():
 @app.route("/new-file")
 @login_required
 def new_file():
+    # Cleanup current local file before starting fresh
+    filename = session.get("last_filename")
+    if filename:
+        local_path = UPLOAD_FOLDER / filename
+        if local_path.exists():
+            try:
+                os.remove(local_path)
+            except:
+                pass
+                
     session.pop("last_filename", None)
     return redirect(url_for("index"))
 

@@ -46,29 +46,73 @@ ALLOWED_EXTENSIONS = {".csv", ".xlsx", ".xls", ".json"}
 # Supabase Setup
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY") # service_role key
 
 if SUPABASE_KEY:
     masked_key = SUPABASE_KEY[:10] + "..." if len(SUPABASE_KEY) > 10 else "SHORT_KEY"
     print(f"DEBUG: Supabase Key loaded. Starts with: {masked_key}")
 
+if SUPABASE_SECRET_KEY:
+    masked_secret = SUPABASE_SECRET_KEY[:10] + "..." if len(SUPABASE_SECRET_KEY) > 10 else "SHORT_KEY"
+    print(f"DEBUG: Supabase Secret Key loaded. Starts with: {masked_secret}")
+
 supabase: Client = None
 if SUPABASE_URL and SUPABASE_KEY and "YOUR_SUPABASE" not in SUPABASE_URL:
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+supabase_admin: Client = None
+if SUPABASE_URL and SUPABASE_SECRET_KEY and "YOUR_SUPABASE" not in SUPABASE_URL:
+    supabase_admin = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY)
+
+from datetime import timedelta
 
 app = Flask(__name__)
 Compress(app) # Enable Gzip compression
 app.config["UPLOAD_FOLDER"] = str(UPLOAD_FOLDER)
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "change-this-secret-key")
+# Make session last for a long time (1 year)
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=365)
 
-# --- AUTH DECORATOR ---
+# --- AUTH UTILITIES ---
+def refresh_supabase_session():
+    """Attempts to refresh the Supabase session if tokens are present."""
+    access_token = session.get("access_token")
+    refresh_token = session.get("refresh_token")
+    
+    if not access_token or not refresh_token or not supabase:
+        return False
+
+    try:
+        # Check if current session is valid by trying to get user
+        supabase.auth.set_session(access_token, refresh_token)
+        supabase.auth.get_user(access_token)
+        return True
+    except:
+        # Token likely expired, try refreshing
+        try:
+            res = supabase.auth.refresh_session(refresh_token)
+            session["access_token"] = res.session.access_token
+            session["refresh_token"] = res.session.refresh_token
+            session["user"] = res.user.id
+            session.permanent = True # Ensure cookie respects lifetime
+            return True
+        except Exception as e:
+            print(f"DEBUG: Session refresh failed: {e}")
+            return False
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if "user" not in session or "access_token" not in session:
-            # Clear potential stale session data if token is missing
-            session.clear()
+        if "user" not in session:
             flash("Please log in to access this page.", "warning")
             return redirect(url_for("login"))
+            
+        # Try to refresh/verify session
+        if not refresh_supabase_session():
+            session.clear()
+            flash("Session expired. Please log in again.", "warning")
+            return redirect(url_for("login"))
+            
         return f(*args, **kwargs)
     return decorated_function
 
@@ -92,9 +136,9 @@ def login():
             response = supabase.auth.sign_in_with_password({"email": email, "password": password})
             session["user"] = response.user.id
             session["email"] = email
-            # Store tokens to restore session after restart
             session["access_token"] = response.session.access_token
             session["refresh_token"] = response.session.refresh_token
+            session.permanent = True # Enable 1-year session
             
             flash("Successfully logged in!", "success")
             return redirect(url_for("index"))
@@ -136,18 +180,16 @@ def signup():
 def verify_otp():
     if request.method == "POST":
         otp = request.form.get("otp")
-        email = request.form.get("email") # Retrieve from form
+        # Get email from session since it's not in the OTP form
+        email = session.get("signup_email")
         
-        # Check if we have OTP
+        if not email:
+            flash("Session expired or invalid email. Please start over.", "danger")
+            return redirect(url_for("signup"))
+            
         if not otp:
             flash("Please enter the verification code.", "danger")
-            # In a real app we might pass the email via session, here we expect it in the form.
-            # But wait, our HTML didn't include the email in the form. Let's fix that.
-            # This will be handled in the update to verify_otp.html OR by storing email in session temporarily
-            if "signup_email" in session:
-                email = session["signup_email"]
-            else:
-                return redirect(url_for("signup"))
+            return render_template("verify_otp.html", signup_email=email)
         
         try:
             # Verify the OTP
@@ -157,10 +199,17 @@ def verify_otp():
                 "type": "signup"
             })
             
-            flash("Email verified successfully! You can now log in.", "success")
+            flash("Identity verified! You can now log in.", "success")
             return redirect(url_for("login"))
         except Exception as e:
-            flash(f"Verification failed: {str(e)}", "danger")
+            err_msg = str(e)
+            print(f"DEBUG: Verification error: {err_msg}")
+            if "expired" in err_msg.lower():
+                flash("The code has expired. Please try signing up again.", "warning")
+            elif "invalid" in err_msg.lower():
+                flash("Invalid code. Please check your email carefully.", "danger")
+            else:
+                flash(f"Verification failed: {err_msg}", "danger")
             return render_template("verify_otp.html", signup_email=email)
             
     # For GET request
@@ -253,20 +302,40 @@ def settings():
 @app.route("/delete-account", methods=["POST"])
 @login_required
 def delete_account():
-    # In a full app with admin access, we would do:
-    # supabase.auth.admin.delete_user(session["user"])
-    # For a regular user, if self-deletion is not easily permitted without an admin key,
-    # we simulate the deletion, clear session, and show a flash message.
-    # We will try to call an RPC or user deletion if supabase-py supports it, 
-    # otherwise we just log them out.
+    user_id = session.get("user")
+    if not user_id:
+        flash("You must be logged in to delete your account.", "danger")
+        return redirect(url_for("login"))
+        
     try:
-        # Currently, supabase-py doesn't officially expose a standard user self-delete 
-        # without admin privileges. So we clear session and inform.
+        # Use the admin client if available, otherwise fallback to the main client
+        client_to_use = supabase_admin if supabase_admin else supabase
+        
+        if not client_to_use:
+            flash("Supabase is not configured properly.", "danger")
+            return redirect(url_for("settings"))
+
+        # Actual deletion using Supabase Admin API
+        client_to_use.auth.admin.delete_user(user_id)
+        
+        # Also clean up the profile explicitly just in case
+        try:
+            client_to_use.table("profiles").delete().eq("id", user_id).execute()
+        except:
+            pass
+
         session.clear()
-        flash("Your account deletion request has been processed. You have been logged out.", "success")
+        flash("Your account has been permanently deleted. We are sorry to see you go.", "success")
+        return redirect(url_for("signup"))
     except Exception as e:
-        flash(f"Error processing account deletion: {e}", "danger")
-    return redirect(url_for("login"))
+        print(f"DEBUG: Account deletion failed: {e}")
+        # If admin API fails (e.g. not a service role key), we explain the limitation
+        err_str = str(e).lower()
+        if "admin" in err_str or "403" in err_str or "401" in err_str or "user not allowed" in err_str:
+             flash("Account deletion failed. This action requires the Supabase 'service_role' key. Please ensure your .env file has the correct SUPABASE_SECRET_KEY.", "danger")
+        else:
+            flash(f"Error processing account deletion: {str(e)}", "danger")
+        return redirect(url_for("settings"))
 
 @app.route("/test-supabase")
 def test_supabase():

@@ -12,7 +12,7 @@ high-performance WebGL rendering engine and AI-driven insights.
 
 2. TECHNOLOGY STACK (THE ENGINE)
 --------------------------------------------------------------------------------
-* BACKEND FRAMEWORK: Flask (Python 3.10+) + Flask-Compress + Gunicorn
+* BACKEND FRAMEWORK: Flask (Python 3.12+) + Flask-Compress + Gunicorn
   - Handles routing, session management, and Gzip-compressed data transfer.
 * DATA PROCESSING: Pandas & NumPy (High-Speed C-Parsing Engine)
   - Ultra-fast data ingestion and multi-dimensional mathematical calculations.
@@ -22,7 +22,7 @@ high-performance WebGL rendering engine and AI-driven insights.
   - Secure login, OTP verification, and password recovery systems.
 * CLOUD STORAGE: Supabase Storage API
   - Non-blocking background threading for cloud dataset archival.
-* FRONTEND TOOLING: Vite 7.0 + Node.js
+* FRONTEND TOOLING: Vite 7.3 + Node.js
   - High-performance asset bundling and modern development workflow.
 * STYLING: CSS3 (Custom Neo-Brutalist Tokens) + Bootstrap 5.3
   - Features glassmorphism, high-contrast palettes, and dark mode support.
@@ -89,7 +89,7 @@ STEP 5: IMMERSIVE ANALYSIS
 
 6. HOW TO RUN THE PROJECT
 --------------------------------------------------------------------------------
-1. Setup Environments: Install Python 3.10+ and Node.js.
+1. Setup Environments: Install Python 3.12+ and Node.js.
 2. Backend: `pip install -r requirements.txt`
 3. Frontend: `npm install` followed by `npm run dev` (for Vite tools).
 4. Config: Populate `.env` with Supabase and Flask secret keys.

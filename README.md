@@ -1,4 +1,4 @@
-# 📊 Data Studio - Next-Gen Immersive Data Exploration
+# 📊 Data Studio 
 
 Data Studio is a high-performance web application designed for immersive data exploration. It allows users to upload complex datasets (CSV, Excel, JSON) and automatically transforms them into interactive 3D statistical models, providing AI-driven narrative insights through a premium Neo-Brutalist design system.
 

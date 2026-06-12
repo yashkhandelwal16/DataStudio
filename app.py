@@ -2,6 +2,7 @@ import os
 from functools import wraps
 from pathlib import Path
 
+# pyrefly: ignore [missing-import]
 from flask import (
     Flask,
     flash,
@@ -11,9 +12,13 @@ from flask import (
     session,
     url_for,
 )
+# pyrefly: ignore [missing-import]
 from flask_compress import Compress
+# pyrefly: ignore [missing-import]
 from werkzeug.utils import secure_filename
+# pyrefly: ignore [missing-import]
 from supabase import create_client, Client
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 
 from utils.data_loader import load_dataset
@@ -56,13 +61,39 @@ if SUPABASE_SECRET_KEY:
     masked_secret = SUPABASE_SECRET_KEY[:10] + "..." if len(SUPABASE_SECRET_KEY) > 10 else "SHORT_KEY"
     print(f"DEBUG: Supabase Secret Key loaded. Starts with: {masked_secret}")
 
-supabase: Client = None
-if SUPABASE_URL and SUPABASE_KEY and "YOUR_SUPABASE" not in SUPABASE_URL:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+# --- Supabase Client with Auto-Reconnect ---
+# We keep a cached client but recreate it transparently if the project was
+# paused (free-tier) and the connection has gone stale.
+_supabase_client: Client = None
+_supabase_admin_client: Client = None
 
-supabase_admin: Client = None
-if SUPABASE_URL and SUPABASE_SECRET_KEY and "YOUR_SUPABASE" not in SUPABASE_URL:
-    supabase_admin = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY)
+def _make_client(key: str) -> Client | None:
+    """Create a fresh Supabase client, or return None if not configured."""
+    if SUPABASE_URL and key and "YOUR_SUPABASE" not in SUPABASE_URL:
+        return create_client(SUPABASE_URL, key)
+    return None
+
+def get_supabase(force_new: bool = False) -> Client | None:
+    """Return the cached Supabase client, creating it if needed."""
+    global _supabase_client
+    if force_new or _supabase_client is None:
+        _supabase_client = _make_client(SUPABASE_KEY)
+        if force_new:
+            print("DEBUG: Supabase client recreated (reconnect).")
+    return _supabase_client
+
+def get_supabase_admin(force_new: bool = False) -> Client | None:
+    """Return the cached Supabase admin client, creating it if needed."""
+    global _supabase_admin_client
+    if force_new or _supabase_admin_client is None:
+        _supabase_admin_client = _make_client(SUPABASE_SECRET_KEY)
+        if force_new:
+            print("DEBUG: Supabase admin client recreated (reconnect).")
+    return _supabase_admin_client
+
+# Initialise on startup (kept for backward-compat with non-auth routes)
+supabase: Client = get_supabase()
+supabase_admin: Client = get_supabase_admin()
 
 from datetime import timedelta
 
@@ -128,22 +159,36 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
         
-        if not supabase:
+        client = get_supabase()
+        if not client:
             flash("Supabase is not configured. Please check your .env file.", "danger")
             return redirect(url_for("login"))
             
-        try:
-            response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            session["user"] = response.user.id
-            session["email"] = email
-            session["access_token"] = response.session.access_token
-            session["refresh_token"] = response.session.refresh_token
-            session.permanent = True # Enable 1-year session
-            
-            flash("Successfully logged in!", "success")
-            return redirect(url_for("index"))
-        except Exception as e:
-            flash(f"Login failed: {str(e)}", "danger")
+        # Try once; if it looks like a connection/stale-client error, recreate
+        # the client and retry once (handles Supabase free-tier wake-up).
+        for attempt in range(2):
+            try:
+                response = client.auth.sign_in_with_password({"email": email, "password": password})
+                session["user"] = response.user.id
+                session["email"] = email
+                session["access_token"] = response.session.access_token
+                session["refresh_token"] = response.session.refresh_token
+                session.permanent = True
+                flash("Successfully logged in!", "success")
+                return redirect(url_for("index"))
+            except Exception as e:
+                err = str(e).lower()
+                is_conn_err = any(k in err for k in (
+                    "connect", "network", "timeout", "connection",
+                    "unreachable", "refused", "reset", "eof"
+                ))
+                if is_conn_err and attempt == 0:
+                    print(f"DEBUG: Auth connection error on attempt 1, reconnecting... ({e})")
+                    client = get_supabase(force_new=True)
+                    continue  # retry with fresh client
+                # Genuine auth failure or second attempt failed
+                flash(f"Login failed: {str(e)}", "danger")
+                break
             
     return render_template("login.html")
 
@@ -154,25 +199,34 @@ def signup():
         password = request.form.get("password")
         full_name = request.form.get("full_name")
         
-        if not supabase:
+        client = get_supabase()
+        if not client:
             flash("Supabase is not configured. Please check your .env file.", "danger")
             return redirect(url_for("signup"))
             
-        try:
-            # Sign up the user
-            response = supabase.auth.sign_up({
-                "email": email,
-                "password": password,
-                "options": {
-                    "data": {"full_name": full_name}
-                }
-            })
-            # On success, rather than redirecting to login, render the OTP page
-            session["signup_email"] = email
-            return render_template("verify_otp.html", signup_email=email)
-            
-        except Exception as e:
-            flash(f"Signup failed: {str(e)}", "danger")
+        for attempt in range(2):
+            try:
+                response = client.auth.sign_up({
+                    "email": email,
+                    "password": password,
+                    "options": {
+                        "data": {"full_name": full_name}
+                    }
+                })
+                session["signup_email"] = email
+                return render_template("verify_otp.html", signup_email=email)
+            except Exception as e:
+                err = str(e).lower()
+                is_conn_err = any(k in err for k in (
+                    "connect", "network", "timeout", "connection",
+                    "unreachable", "refused", "reset", "eof"
+                ))
+                if is_conn_err and attempt == 0:
+                    print(f"DEBUG: Auth connection error on attempt 1, reconnecting... ({e})")
+                    client = get_supabase(force_new=True)
+                    continue
+                flash(f"Signup failed: {str(e)}", "danger")
+                break
             
     return render_template("signup.html")
 
@@ -554,10 +608,40 @@ def health():
     }
 
 
+# --- Supabase Keep-Alive (prevents free-tier auto-pause) ---
+def _supabase_keepalive():
+    """Background thread: pings Supabase every 4 days so the free-tier project
+    never goes idle and triggers the 'Cannot connect to authentication server' error."""
+    import time
+    import threading
+
+    INTERVAL_SECONDS = 4 * 24 * 60 * 60  # 4 days
+
+    def _ping():
+        while True:
+            time.sleep(INTERVAL_SECONDS)
+            try:
+                client = get_supabase()
+                if client:
+                    # A lightweight call — just checks auth is reachable
+                    client.auth.get_session()
+                    print("DEBUG: Supabase keep-alive ping OK.")
+            except Exception as e:
+                # On failure, force a fresh client so the next real request
+                # gets a clean connection instead of a stale one
+                get_supabase(force_new=True)
+                print(f"DEBUG: Supabase keep-alive ping failed, client refreshed: {e}")
+
+    t = threading.Thread(target=_ping, daemon=True, name="supabase-keepalive")
+    t.start()
+
+# Only start the keep-alive in the main process (not the Flask reloader child)
+if not os.environ.get("WERKZEUG_RUN_MAIN"):
+    _supabase_keepalive()
+
+
 if __name__ == "__main__":
     # Use PORT from environment (default 5000 for local, 10000 for Render)
     port = int(os.environ.get("PORT", 5000))
     # Keep debug=True for now, but deployment platforms usually override this via environment
     app.run(host="0.0.0.0", port=port, debug=True)
-
-

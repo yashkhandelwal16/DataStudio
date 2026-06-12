@@ -10,11 +10,12 @@
     rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script>
-    // Initialize theme immediately to prevent flash
     (function () {
       const theme = localStorage.getItem('theme');
       if (theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
       }
     })();
   </script>
@@ -36,16 +37,14 @@
         DATA STUDIO.
       </a>
       <div class="d-flex align-items-center gap-3">
-        <button id="theme-toggle" class="btn-neo-outline py-2 px-3" style="font-size: 1.2rem; line-height: 1;"
+        <button class="btn-neo-outline py-2 px-3 theme-toggle" style="font-size: 1.2rem; line-height: 1;"
           aria-label="Toggle Dark Mode">
           🌙
         </button>
-        <span class="small fw-bolder text-uppercase d-none d-md-block" style="color: var(--text-main);">
-          LOGGED AS: <span
-            style="background-color: var(--text-main); color: var(--bg-card); padding: 0.2rem 0.6rem; font-weight: 900;">{{
-            session.get('email', 'Guest') }}</span>
-        </span>
-        <a href="/logout" class="btn-neo-outline py-2 px-4">Log out</a>
+        {% if session.get('last_filename') %}
+        <a href="/dashboard" class="btn-neo-outline py-2 px-4">Active Report ↘</a>
+        {% endif %}
+        <a href="/settings" class="btn-neo-outline py-2 px-4">Settings ⚙️</a>
       </div>
     </div>
   </nav>
@@ -139,13 +138,7 @@
     </div>
   </section>
 
-  <footer>
-    <div class="container">
-      <div class="footer-text">
-        Made with <span class="footer-heart">❤️</span> by Yash Khandelwal | © 2024–2026
-      </div>
-    </div>
-  </footer>
+
 
 
   <div id="loading-overlay">
@@ -254,6 +247,16 @@
       fileInput.click();
     });
   </script>
+
+  <footer>
+    <div class="container">
+      <div class="footer-text">
+        Made with <span class="footer-heart">❤️</span> by YASH.dev/ | © 2025–2026
+      </div>
+    </div>
+  </footer>
+
 </body>
+
 
 </html>

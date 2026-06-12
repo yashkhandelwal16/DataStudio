@@ -43,11 +43,24 @@ body {
   /* Prevent horizontal scroll */
   width: 100%;
   position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 html {
   overflow-x: hidden;
   width: 100%;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
 }
 
 * {
@@ -248,7 +261,7 @@ html {
 
 /* Footer */
 footer {
-  margin-top: 5rem;
+  margin-top: auto;
   padding: 4rem 2rem;
   border-top: var(--border-thick);
   background: var(--bg-card);
@@ -351,31 +364,41 @@ footer {
 }
 
 
-/* Custom Brutalist Scrollbar */
-.table-container::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+/* Brutalist Scrollbar System */
+.table-container::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
 }
 
-.table-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-left: var(--border-thin);
-  border-top: var(--border-thin);
+.table-container::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
 }
 
-.table-container::-webkit-scrollbar-thumb {
+.table-container::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border: 2px solid var(--bg-card);
-  /* was #f1f1f1 */
+  border: 3px solid var(--bg-main);
+  box-shadow: inset 0 0 0 1px var(--border-color);
 }
 
-.table-container::-webkit-scrollbar-thumb:hover {
+.table-container::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
   background: var(--primary-yellow);
+  box-shadow: inset 0 0 0 1px black;
+}
+
+/* Specific fix for horizontal scrollbar visibility */
+.table-container::-webkit-scrollbar-corner {
+  background: var(--bg-main);
 }
 
 .table {
   margin-bottom: 0;
   width: 100%;
+  color: var(--text-main) !important;
 }
 
 .table th {
@@ -396,6 +419,27 @@ footer {
   white-space: nowrap;
   padding: 0.8rem 1rem !important;
   background-color: var(--bg-card);
+  color: var(--text-main) !important;
+}
+
+/* Ensure striped tables work in dark mode */
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: transparent !important;
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(even) > * {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(even) > * {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.table-hover tbody tr:hover td {
+  background-color: var(--primary-yellow) !important;
+  color: black !important;
 }
 
 

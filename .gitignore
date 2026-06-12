@@ -26,3 +26,8 @@ dist-ssr
 # Environment variables
 .env
 .env.*
+
+# Local data uploads
+uploads/
+static/charts/*.png
+static/charts/*.json

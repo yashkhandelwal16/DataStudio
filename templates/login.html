@@ -14,6 +14,8 @@
             const theme = localStorage.getItem('theme');
             if (theme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
             }
         })();
     </script>
@@ -26,7 +28,7 @@
                 DATA STUDIO
             </a>
             <div class="d-flex align-items-center gap-3">
-                <button id="theme-toggle" class="btn-neo-outline py-2 px-3" style="font-size: 1.2rem; line-height: 1;"
+                <button class="btn-neo-outline py-2 px-3 theme-toggle" style="font-size: 1.2rem; line-height: 1;"
                     aria-label="Toggle Dark Mode">
                     🌙
                 </button>
@@ -35,7 +37,7 @@
         </div>
     </nav>
 
-    <main class="container mt-5 pt-5">
+    <main class="container py-5 my-5 flex-grow-1">
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="auth-card">
@@ -61,6 +63,9 @@
                         <div class="mb-5">
                             <label class="form-label fw-black text-uppercase">Password</label>
                             <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                            <div class="text-end mt-2">
+                                <a href="/forgot-password" class="text-black text-decoration-underline small fw-bold text-uppercase">Forgot Password?</a>
+                            </div>
                         </div>
                         <button type="submit" class="btn-neo w-100">Let's Go ↗</button>
                     </form>
@@ -77,7 +82,7 @@
     <footer>
         <div class="container">
             <div class="footer-text">
-                Made with <span class="footer-heart">❤️</span> by Yash Khandelwal | © 2024–2026
+                Made with <span class="footer-heart">❤️</span> by YASH.dev/ | © 2025–2026
             </div>
         </div>
     </footer>

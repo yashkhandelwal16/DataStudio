@@ -27,7 +27,16 @@ def load_dataset(file_path: Optional[str] = None, file_content: Optional[bytes] 
         # Use 'c' engine for speed and low_memory=False to avoid mixed-type guessing overhead
         df = pd.read_csv(input_data, engine='c', low_memory=False)
     elif ext in (".xlsx", ".xls"):
-        df = pd.read_excel(input_data)
+        try:
+            if ext == ".xlsx":
+                df = pd.read_excel(input_data, engine='openpyxl')
+            else:
+                df = pd.read_excel(input_data, engine='xlrd')
+        except ImportError as import_err:
+            raise ImportError(
+                "Missing required Excel dependency. Install xlrd>=2.0.1 for .xls support and openpyxl for .xlsx support. "
+                "Use pip install xlrd>=2.0.1 openpyxl"
+            ) from import_err
     elif ext == ".json":
         df = pd.read_json(input_data)
     else:

@@ -31,3 +31,4 @@ dist-ssr
 uploads/
 static/charts/*.png
 static/charts/*.json
+__pycache__/
